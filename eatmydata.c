@@ -33,7 +33,7 @@ int main(int argc, char *argv[argc]) {
     if(ret)
         goto error;
 
-    execvp(argv[1], &argv[2]);
+    execvp(argv[1], &argv[1]);
 error:
     fprintf(stderr, "%s\n", strerror(errno));
     exit(errno);
