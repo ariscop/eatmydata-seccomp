@@ -1,0 +1,43 @@
+
+start:
+    ld [4]                  /* offsetof(struct seccomp_data, arch) */
+    jeq #0xc000003e, x64    /* AUDIT_ARCH_X86_64 */
+    jeq #0x40000003, x86    /* AUDIT_ARCH_I386 */
+    ret #0x7fff0000         /* SECCOMP_RET_ALLOW */
+
+x86:
+    ld [0]           /* offsetof(struct seccomp_data, nr) */
+    jeq #36,  ignore /* sync */
+    jeq #118, ignore /* fsync */
+    jeq #148, ignore /* fdatasync */
+    jeq #314, ignore /* sync_file_range */
+    jeq #344, ignore /* syncfs */
+    ret #0x7fff0000  /* SECCOMP_RET_ALLOW */
+ 
+ /* Mangle flags:          */
+ /* 5   open               */
+ /* 295 openat             */
+ /* 342 open_by_handle_at  */
+ /*                        */
+ /* Side effects?          */
+ /* 144 msync              */
+
+x64:
+    ld [0]           /* offsetof(struct seccomp_data, nr) */
+    jeq #74,  ignore /* fsync */
+    jeq #75,  ignore /* fdatasync */
+    jeq #162, ignore /* sync */
+    jeq #277, ignore /* sync_file_range */
+    jeq #306, ignore /* syncfs */
+    ret #0x7fff0000  /* SECCOMP_RET_ALLOW */
+
+ /* Mangle flags:          */
+ /* 2 open                 */
+ /* 257 openat             */
+ /* 304 open_by_handle_at  */
+ /*                        */
+ /* Side effects?          */
+ /* 26 msync               */
+
+ignore:
+    ret #0x00050000         /* SECCOMP_RET_ERRNO | 0*/
